@@ -78,7 +78,7 @@ function exportTodayData() {
     }
 
      console.log(new Date(), '数据导出完成，文件地址是: ' + filepath);
-    return `http://localhost:8000/export/csv?name=${filename}`;
+    return `http://172.16.2.34:8000/export/csv?name=${filename}`;
 }
 
 // Create a local server to receive data from
