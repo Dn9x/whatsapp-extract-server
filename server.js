@@ -4,16 +4,19 @@ const path = require('path');
 const fs = require('fs');
 const url = require('url');
 const fpath = path.resolve('./cache/');
- console.log(new Date(), '缓存路径是:', fpath);
-const cache = flatCache.load('csv_group', fpath);
+console.log(new Date(), '缓存路径是:', fpath);
+
 
 // 数据存储到本地
 function saveData(data) {
     const date = new Date();
-    const key = `${date.getFullYear()}_${date.getMonth()}_${date.getDay()}`;
+    const key = `${date.getFullYear()}_${date.getMonth() + 1}_${date.getDate()}`;
+
+    // todo: 这里cache需要单独处理，name需要动态加上日期
+    const cache = flatCache.load('csv_group_' + key, fpath);
 
     let result = cache.getKey(key);
-     console.log(new Date(), typeof data);
+    console.log(new Date(), typeof data);
 
     try {
         if (typeof data == 'string') {
@@ -51,7 +54,7 @@ function saveData(data) {
     cache.setKey(key, result);
     cache.save();
 
-     console.log(new Date(), str);
+    console.log(new Date(), str);
     return str;
 }
 
@@ -62,7 +65,10 @@ function exportData() {
 // 导出今天数据
 function exportTodayData() {
     const date = new Date();
-    const key = `${date.getFullYear()}_${date.getMonth()}_${date.getDay()}`;
+    const key = `${date.getFullYear()}_${date.getMonth() + 1}_${date.getDate()}`;
+
+    // todo: 这里cache需要单独处理，name需要动态加上日期
+    const cache = flatCache.load('csv_group_' + key, fpath);
 
     let result = cache.getKey(key);
     const filename = `${key}_${new Date().getTime()}.csv`;
@@ -77,13 +83,13 @@ function exportTodayData() {
         fs.appendFileSync(filepath, csv);
     }
 
-     console.log(new Date(), '数据导出完成，文件地址是: ' + filepath);
+    console.log(new Date(), '数据导出完成，文件地址是: ' + filepath);
     return `http://172.16.2.34:8000/export/csv?name=${filename}`;
 }
 
 // Create a local server to receive data from
 const server = http.createServer((req, res) => {
-     console.log(` ${new Date()} url: ${req.url} `);
+    console.log(` ${new Date()} url: ${req.url} `);
 
     let str = '';
     if (req.url == '/api/group/contact') {
@@ -110,7 +116,7 @@ const server = http.createServer((req, res) => {
         return res.end(str);
     } else if (req.url?.indexOf('/export/csv') != -1) {
         const query = url.parse(req.url, true).query;
-         console.log(new Date(), 'name:', query?.name);
+        console.log(new Date(), 'name:', query?.name);
         const filepath = path.resolve(`./csv/${query?.name}`);
         fs.readFile(filepath, function (err, data) {
             if (err) {
@@ -132,5 +138,5 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(8000, () => {
-     console.log(new Date(), '服务已经启动在8000');
+    console.log(new Date(), '服务已经启动在8000');
 });
