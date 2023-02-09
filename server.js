@@ -4,8 +4,29 @@ const path = require('path');
 const fs = require('fs');
 const url = require('url');
 const fpath = path.resolve('./cache/');
+const fapath = path.resolve('./cache/all');
 console.log(new Date(), '缓存路径是:', fpath);
 
+
+// 判断号码是否存在
+function isHave(mobile) {
+    // 这里存储所有的号码
+    const cache = flatCache.load('all_mobile', fapath);
+
+    let result = cache.getKey('all');
+
+    if (!result) {
+        result = {};
+    }
+    if (!result[mobile]) {
+        result[mobile] = 1;
+        cache.setKey('all', result);
+        cache.save();
+        return false;
+    }
+
+    return true;
+}
 
 // 数据存储到本地
 function saveData(data) {
@@ -35,6 +56,10 @@ function saveData(data) {
     let old = 0;
     for (let key in data) {
         count++;
+        // 如果号码存在，就不存储。
+        if (isHave(key)) {
+            continue;
+        }
         const it = data[key];
 
         if (!result[key]) {
@@ -84,7 +109,7 @@ function exportTodayData() {
     }
 
     console.log(new Date(), '数据导出完成，文件地址是: ' + filepath);
-    return `http://172.16.2.34:8000/export/csv?name=${filename}`;
+    return `http://192.168.1.23:8000/export/csv?name=${filename}`;
 }
 
 // Create a local server to receive data from
